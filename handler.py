@@ -2,6 +2,7 @@ import face_recognition as fr
 import cv2
 
 def compareFace(path1, path2):
+    print("Masuk Ke Compare")
     faceOne = fr.load_image_file(path1)
     faceTwo = fr.load_image_file(path2)
     

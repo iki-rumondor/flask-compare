@@ -25,7 +25,7 @@ def home():
 
 @app.post("/compare")
 def compare():
-    print("oke")
+    print("Masuk Ke Endpoint")
     if 'image1' not in request.files or 'image2' not in request.files:
         resp = jsonify({'message' : 'Please check your files, must be include image1 and image2'})
         resp.status_code = 400
@@ -34,17 +34,20 @@ def compare():
     image1 = request.files['image1']
     image2 = request.files['image2']
     
+    print("Masuk Ke Validasi Image")
     if not allowed_file(image1.filename) or not allowed_file(image2.filename):
         resp = jsonify({'message' : 'File is not an image'})
         resp.status_code = 400
         return resp
 
+    print("Masuk Ke Simpan Gambar")
     image1_filename = "one%s" % get_file_extension(secure_filename(image1.filename))
     image1.save(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename))
 
     image2_filename = "two%s" % get_file_extension(secure_filename(image2.filename))
     image2.save(os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
     
+    print("Berhasil Menyimpan Gambar")
     try:
         result = compareFace(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename), os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
         return jsonify({'matching': bool(result)}), 200
