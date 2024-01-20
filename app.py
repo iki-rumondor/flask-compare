@@ -39,10 +39,10 @@ def compare():
         resp.status_code = 400
         return resp
 
-    image1_filename = "one.%s" % get_file_extension(secure_filename(image1.filename))
+    image1_filename = "one%s" % get_file_extension(secure_filename(image1.filename))
     image1.save(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename))
 
-    image2_filename = "two.%s" % get_file_extension(secure_filename(image2.filename))
+    image2_filename = "two%s" % get_file_extension(secure_filename(image2.filename))
     image2.save(os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
     
     try:
