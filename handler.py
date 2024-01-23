@@ -14,5 +14,4 @@ def compareFace(path1, path2):
 
     matchResult = fr.compare_faces([faceOneEnco], faceTwoEnco)
     result, = matchResult
-    
     return result

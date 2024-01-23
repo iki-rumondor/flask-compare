@@ -46,7 +46,6 @@ def compare():
 
     image2_filename = "two%s" % get_file_extension(secure_filename(image2.filename))
     image2.save(os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
-    
     print("Berhasil Menyimpan Gambar")
     try:
         result = compareFace(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename), os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
