@@ -1,5 +1,8 @@
 import face_recognition as fr
 import cv2
+import numpy as np
+import json
+from utils import convertToList
 
 def compareFace(path1, path2):
     print("Masuk Ke Compare")
@@ -15,3 +18,41 @@ def compareFace(path1, path2):
     matchResult = fr.compare_faces([faceOneEnco], faceTwoEnco)
     result, = matchResult
     return result
+
+
+def generateFaceEncodings(imagePath):
+    image = fr.load_image_file(imagePath)
+    rgbFace = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    faceLocation = fr.face_locations(rgbFace)
+    if not faceLocation:
+        return {
+            'success': False,
+            'message': "Wajah Tidak Ditemukan"
+        }
+    
+    encodeFace = fr.face_encodings(rgbFace)[0]
+    return {
+        'success': True,
+        'face': convertToList(encodeFace)
+    }
+
+def compareFacesWithImage(json_faces, encode_face):
+    face = np.array(encode_face)
+    faces_data = json.loads(json_faces)
+    for id, face_encoding_list in faces_data.items():
+        known_face_encoding = np.array(face_encoding_list)
+        results = fr.compare_faces([known_face_encoding], face)
+
+        if results[0]:
+            return {
+                'success': True,
+                'data': {
+                    'id': id,
+                }
+            }
+
+    return {
+        'success': False,
+        'message': "Face not found"
+    }

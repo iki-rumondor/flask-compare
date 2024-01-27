@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from handler import compareFace
+from handler import compareFace, generateFaceEncodings
 from werkzeug.utils import secure_filename
 import os
 from pathlib import Path
@@ -22,6 +22,42 @@ def get_file_extension(filename):
 def home():
     return render_template('form.html')
 
+@app.get("/view_encode")
+def view_encode():
+    return render_template('encode_face.html')
+
+@app.post("/encode_face")
+def encode_face():
+    if 'image' not in request.files:
+        resp = jsonify({'message' : 'Image file not found'})
+        resp.status_code = 400
+        return resp
+    
+    image = request.files['image']
+    
+    if not allowed_file(image.filename):
+        resp = jsonify({'message' : 'File is not an image'})
+        resp.status_code = 400
+        return resp
+    
+    image_filename = "image%s" % get_file_extension(secure_filename(image.filename))
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    image.save(image_path)
+
+    try:
+        result = generateFaceEncodings(image_path)
+        if not result["success"]:
+            resp = jsonify(result)
+            resp.status_code = 500
+            return resp
+        resp = jsonify(result)
+        resp.status_code = 200
+        return resp
+    except Exception as e:
+        print(e)
+    finally:
+        os.remove(image_path)
+    
 
 @app.post("/compare")
 def compare():
