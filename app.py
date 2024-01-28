@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from handler import compareFace, generateFaceEncodings
+from handler import compareFace, generateFaceEncodings, checkFace
 from werkzeug.utils import secure_filename
 import os
 from pathlib import Path
@@ -26,6 +26,38 @@ def home():
 def view_encode():
     return render_template('encode_face.html')
 
+@app.post("/check_face")
+def check_face():
+    if 'image' not in request.files:
+        resp = jsonify({'message' : 'Image file not found'})
+        resp.status_code = 400
+        return resp
+    
+    image = request.files['image']
+    
+    if not allowed_file(image.filename):
+        resp = jsonify({'message' : 'File is not an image'})
+        resp.status_code = 400
+        return resp
+    
+    image_filename = "check%s" % get_file_extension(secure_filename(image.filename))
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
+    image.save(image_path)
+
+    try:
+        result = checkFace(image_path)
+        if not result["success"]:
+            resp = jsonify(result)
+            resp.status_code = 500
+            return resp
+        resp = jsonify(result)
+        resp.status_code = 200
+        return resp
+    except Exception as e:
+        print(e)
+    finally:
+        os.remove(image_path)
+
 @app.post("/encode_face")
 def encode_face():
     if 'image' not in request.files:
@@ -40,7 +72,7 @@ def encode_face():
         resp.status_code = 400
         return resp
     
-    image_filename = "image%s" % get_file_extension(secure_filename(image.filename))
+    image_filename = "check%s" % get_file_extension(secure_filename(image.filename))
     image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
     image.save(image_path)
 
@@ -78,19 +110,35 @@ def compare():
 
     print("Masuk Ke Simpan Gambar")
     image1_filename = "one%s" % get_file_extension(secure_filename(image1.filename))
-    image1.save(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename))
+    image1_path = os.path.join(app.config['UPLOAD_FOLDER'], image1_filename)
+    image1.save(image1_path)
 
     image2_filename = "two%s" % get_file_extension(secure_filename(image2.filename))
-    image2.save(os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
+    image2_path = os.path.join(app.config['UPLOAD_FOLDER'], image2_filename)
+    image2.save(image2_path)
     print("Berhasil Menyimpan Gambar")
+    
+
     try:
-        result = compareFace(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename), os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
-        return jsonify({'matching': bool(result)}), 200
+        res = checkFace(image1_path)
+        if not res["success"]:
+            resp = jsonify(res)
+            resp.status_code = 500
+            return resp
+        
+        res = checkFace(image2_path)
+        if not res['success']:
+            resp = jsonify(res)
+            resp.status_code = 500
+            return resp
+        
+        result = compareFace(image1_path, image2_path)
+        return jsonify(result), 200
     except Exception as e:
         return jsonify({'message': str(e)}), 500
     finally:
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image1_filename))
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image2_filename))
+        os.remove(image1_path)
+        os.remove(image2_path)
 
 
 if __name__ == '__main__':

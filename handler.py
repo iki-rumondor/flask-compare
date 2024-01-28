@@ -17,8 +17,26 @@ def compareFace(path1, path2):
 
     matchResult = fr.compare_faces([faceOneEnco], faceTwoEnco)
     result, = matchResult
-    return result
+    return {
+        'success': True,
+        'matching': bool(result)
+    }
 
+def checkFace(imagePath):
+    image = fr.load_image_file(imagePath)
+    rgbFace = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    faceLocation = fr.face_locations(rgbFace)
+    if not faceLocation:
+        return {
+            'success': False,
+            'message': "Wajah Tidak Ditemukan"
+        }
+    
+    return {
+        'success': True,
+        'message': "Wajah Ditemukan"
+    }
 
 def generateFaceEncodings(imagePath):
     image = fr.load_image_file(imagePath)
