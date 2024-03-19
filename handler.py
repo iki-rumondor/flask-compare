@@ -25,7 +25,6 @@ def compareFace(path1, path2):
 def checkFace(imagePath):
     image = fr.load_image_file(imagePath)
     rgbFace = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    
     faceLocation = fr.face_locations(rgbFace)
     if not faceLocation:
         return {
