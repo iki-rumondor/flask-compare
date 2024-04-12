@@ -18,13 +18,13 @@ def get_file_extension(filename):
     path = Path(filename)
     return path.suffix
 
-@app.get("/")
-def home():
-    return render_template('form.html')
+# @app.get("/")
+# def home():
+#     return render_template('form.html')
 
-@app.get("/view_encode")
-def view_encode():
-    return render_template('encode_face.html')
+# @app.get("/view_encode")
+# def view_encode():
+#     return render_template('encode_face.html')
 
 @app.post("/check_face")
 def check_face():
